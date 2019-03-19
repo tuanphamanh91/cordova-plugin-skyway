@@ -1,7 +1,7 @@
 {
   "name": "cordova-plugin-skyway",
   "version": "0.1.0",
-  "description": "",
+  "description": "abcd",
   "cordova": {
     "id": "cordova-plugin-skyway",
     "platforms": [
@@ -9,11 +9,15 @@
       "ios"
     ]
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tuanphamanh91/cordova-plugin-skyway.git"
+  },
   "keywords": [
     "ecosystem:cordova",
     "cordova-android",
     "cordova-ios"
   ],
-  "author": "",
-  "license": "ISC"
+  "author": "SIS",
+  "license": "MIT"
 }

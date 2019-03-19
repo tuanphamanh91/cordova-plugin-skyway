@@ -4,10 +4,29 @@
    <engines>
         <engine name="cordova" version=">=4.0.0" />
     </engines>
-   <name>Skyway</name>
-   <js-module name="Skyway" src="www/Skyway.js">
+    <name>Skyway</name>
+
+    <description>Plugin for Web skyway</description>
+
+    <author>SIS</author>
+
+    <keywords>video call, live stream, chat room</keywords>
+
+    <license>MIT</license>
+
+   <js-module name="Skyway" src="www/skyway.js">
       <clobbers target="cordova.plugins.skyway" />
    </js-module>
+
+   <platform name="ios">
+      <config-file parent="/*" target="config.xml">
+         <feature name="Skyway">
+            <param name="ios-package" value="Skyway" />
+         </feature>
+      </config-file>
+      <source-file src="src/ios/Skyway.m" />
+      <header-file src="src/ios/Skyway.h" />
+   </platform>
    
    <platform name="android">
       <config-file parent="/*" target="res/xml/config.xml">
@@ -19,13 +38,4 @@
       <source-file src="src/android/Skyway.java" target-dir="src/cordova/plugin/skyway" />
    </platform>
 
-   <platform name="ios">
-      <config-file parent="/*" target="config.xml">
-         <feature name="Skyway">
-            <param name="ios-package" value="Skyway" />
-         </feature>
-      </config-file>
-      <source-file src="src/ios/Skyway.m" />
-      <header-file src="src/ios/Skyway.h" />
-   </platform>
 </plugin>
