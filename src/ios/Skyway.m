@@ -1,6 +1,9 @@
 /********* Skyway.m Cordova Plugin Implementation *******/
 
 #import <Cordova/CDV.h>
+#import "ViewController.h"
+
+#define ROOTVIEW [[[UIApplication sharedApplication] keyWindow] rootViewController]
 
 @interface Skyway : CDVPlugin {
   // Member variables go here.
@@ -28,10 +31,13 @@
 - (void)createPeer:(CDVInvokedUrlCommand*)command 
 {
     NSLog(@"createPeer");
+    NSLog(@"startTrip");
+    NSString* driverID = [command.arguments objectAtIndex:0];
+    ViewController *vc = [[ViewController alloc] initWithNibName:@"ViewController" bundle:nil];
+    [ROOTVIEW presentViewController:vc animated:YES completion:^{}];
+
     CDVPluginResult* pluginResult = nil;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
-
-
 
 @end

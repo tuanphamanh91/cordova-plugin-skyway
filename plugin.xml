@@ -26,6 +26,10 @@
       </config-file>
       <source-file src="src/ios/Skyway.m" />
       <header-file src="src/ios/Skyway.h" />
+      <header-file src="src/ios/ViewController.h" />
+      <source-file src="src/ios/ViewController.m" />
+      <source-file src="src/ios/ViewController.xib" />
+      <framework src="SkyWay" type="podspec" spec="~> 1.0.6" />
    </platform>
    
    <platform name="android">
