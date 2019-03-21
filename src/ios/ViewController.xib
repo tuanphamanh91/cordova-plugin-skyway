@@ -31,38 +31,59 @@
                     <subviews>
                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LFB-rH-E6x">
                             <rect key="frame" x="305" y="40" width="50" height="50"/>
-                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" constant="50" id="VWf-Q5-ZeB"/>
                                 <constraint firstAttribute="height" constant="50" id="umG-b5-cIF"/>
                             </constraints>
+                            <state key="normal" backgroundImage="switchButton.png"/>
+                            <connections>
+                                <action selector="switchCameraButtonPressed:" destination="-1" eventType="touchUpInside" id="QI7-6B-lw2"/>
+                            </connections>
                         </button>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0qF-yi-F9S">
                             <rect key="frame" x="37.5" y="557" width="300" height="80"/>
                             <subviews>
+                                <view alpha="0.40000000000000002" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="U8c-gU-p67">
+                                    <rect key="frame" x="0.0" y="0.0" width="300" height="80"/>
+                                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <userDefinedRuntimeAttributes>
+                                        <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                            <integer key="value" value="8"/>
+                                        </userDefinedRuntimeAttribute>
+                                    </userDefinedRuntimeAttributes>
+                                </view>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2VY-MG-3Zj">
-                                    <rect key="frame" x="210" y="15" width="60" height="50"/>
-                                    <color key="backgroundColor" red="0.83589044820000002" green="1" blue="0.65695329010000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <rect key="frame" x="205" y="15" width="50" height="50"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <constraints>
-                                        <constraint firstAttribute="width" constant="60" id="8lG-eI-oP1"/>
+                                        <constraint firstAttribute="width" secondItem="2VY-MG-3Zj" secondAttribute="height" id="svL-7C-yJL"/>
                                     </constraints>
+                                    <state key="normal" backgroundImage="endcall.png"/>
+                                    <connections>
+                                        <action selector="hangoutButtonPressed:" destination="-1" eventType="touchUpInside" id="WA9-u0-csn"/>
+                                    </connections>
                                 </button>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="abQ-Vt-wGr">
-                                    <rect key="frame" x="120" y="15" width="60" height="50"/>
-                                    <color key="backgroundColor" red="0.83589044820000002" green="1" blue="0.65695329010000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <rect key="frame" x="125" y="15" width="50" height="50"/>
                                     <constraints>
-                                        <constraint firstAttribute="width" constant="60" id="XHd-cP-HTF"/>
+                                        <constraint firstAttribute="width" secondItem="abQ-Vt-wGr" secondAttribute="height" id="o2D-99-kCu"/>
                                     </constraints>
+                                    <state key="normal" backgroundImage="video.png"/>
+                                    <connections>
+                                        <action selector="cameraOffButonPressed:" destination="-1" eventType="touchUpInside" id="P2L-ED-D2i"/>
+                                    </connections>
                                 </button>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VRU-Lj-her">
-                                    <rect key="frame" x="30" y="15" width="60" height="50"/>
-                                    <color key="backgroundColor" red="0.83589044820000002" green="1" blue="0.65695329010000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <rect key="frame" x="45" y="15" width="50" height="50"/>
                                     <constraints>
-                                        <constraint firstAttribute="width" constant="60" id="fBB-VR-YYQ"/>
+                                        <constraint firstAttribute="width" secondItem="VRU-Lj-her" secondAttribute="height" id="oAz-4q-0uo"/>
                                     </constraints>
+                                    <state key="normal" backgroundImage="mute.png"/>
+                                    <connections>
+                                        <action selector="muteButtonPressed:" destination="-1" eventType="touchUpInside" id="sqj-pi-FNY"/>
+                                    </connections>
                                 </button>
                             </subviews>
-                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstItem="abQ-Vt-wGr" firstAttribute="centerX" secondItem="0qF-yi-F9S" secondAttribute="centerX" id="8qO-Pw-lw4"/>
                                 <constraint firstItem="abQ-Vt-wGr" firstAttribute="bottom" secondItem="VRU-Lj-her" secondAttribute="bottom" id="9e4-7r-z37"/>
@@ -71,9 +92,13 @@
                                 <constraint firstItem="2VY-MG-3Zj" firstAttribute="leading" secondItem="abQ-Vt-wGr" secondAttribute="trailing" constant="30" id="HB0-3j-1ze"/>
                                 <constraint firstAttribute="width" constant="300" id="HBl-xC-4dp"/>
                                 <constraint firstAttribute="height" constant="80" id="V7a-SH-wXU"/>
+                                <constraint firstItem="U8c-gU-p67" firstAttribute="top" secondItem="0qF-yi-F9S" secondAttribute="top" id="XGB-pa-bgs"/>
+                                <constraint firstAttribute="trailing" secondItem="U8c-gU-p67" secondAttribute="trailing" id="ac8-u1-MWR"/>
                                 <constraint firstItem="2VY-MG-3Zj" firstAttribute="top" secondItem="abQ-Vt-wGr" secondAttribute="top" id="gEh-hN-mvU"/>
+                                <constraint firstItem="U8c-gU-p67" firstAttribute="leading" secondItem="0qF-yi-F9S" secondAttribute="leading" id="kDE-uK-UEg"/>
                                 <constraint firstAttribute="bottom" secondItem="abQ-Vt-wGr" secondAttribute="bottom" constant="15" id="n7P-mW-Ldo"/>
                                 <constraint firstItem="abQ-Vt-wGr" firstAttribute="top" secondItem="0qF-yi-F9S" secondAttribute="top" constant="15" id="qL6-Lq-5tN"/>
+                                <constraint firstAttribute="bottom" secondItem="U8c-gU-p67" secondAttribute="bottom" id="sX7-HH-J7y"/>
                                 <constraint firstItem="abQ-Vt-wGr" firstAttribute="top" secondItem="VRU-Lj-her" secondAttribute="top" id="tNe-ZO-Pxv"/>
                             </constraints>
                         </view>
@@ -95,7 +120,13 @@
                 <constraint firstItem="VAQ-mr-Y1e" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="qFS-pL-J53"/>
             </constraints>
             <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
-            <point key="canvasLocation" x="34" y="109"/>
+            <point key="canvasLocation" x="32.799999999999997" y="108.39580209895054"/>
         </view>
     </objects>
+    <resources>
+        <image name="endcall.png" width="180" height="180"/>
+        <image name="mute.png" width="180" height="180"/>
+        <image name="switchButton.png" width="192" height="192"/>
+        <image name="video.png" width="180" height="180"/>
+    </resources>
 </document>

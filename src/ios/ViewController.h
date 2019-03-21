@@ -10,6 +10,8 @@
 #import <SkyWay/SKWPeer.h>
 @interface ViewController : UIViewController
 
+@property(nonatomic, strong) NSString *partnerId;
+@property(nonatomic, strong) NSString *myId;
 
 @end
 
