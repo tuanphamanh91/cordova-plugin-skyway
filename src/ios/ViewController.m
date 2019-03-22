@@ -186,12 +186,12 @@ static NSString *const kDomain = @"money-reco.com";
     [self closeRemoteStream];
     [_mediaConnection close];
     endCallTime = [[NSDate date] timeIntervalSince1970];
-    NSLog(startCallTime);
-    NSLog(endCallTime);
-    if (self.succesBlock) {
-        self.succesBlock(10, 20);
+    NSLog(@"%lu", (unsigned long)startCallTime);
+    NSLog(@"%lu", endCallTime);
+    if (self.successBlock) {
+        self.successBlock([_myId integerValue], [_partnerId integerValue]);
     }
-    self.succesBlock = nil;
+    self.successBlock = nil;
     [self dismissViewControllerAnimated:NO completion:nil];
 
 }

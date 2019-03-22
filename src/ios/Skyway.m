@@ -31,17 +31,19 @@
 - (void)createPeer:(CDVInvokedUrlCommand*)command 
 {
     NSLog(@"startTrip");
-    self.callbackId = command.callbackId;
-
-    NSString *myId = [command.arguments objectAtIndex:0];
-    NSString  *partnerId = [command.arguments objectAtIndex:1];
+    NSDictionary *options = command.arguments[0];
+    NSString *myId = options[@"myId"] ?: nil;
+    NSString *partnerId = options[@"partnerId"] ?: nil;
     
     ViewController *vc = [[ViewController alloc] initWithNibName:@"ViewController" bundle:nil];
     vc.myId = myId;
     vc.partnerId = partnerId;
-    [vc setSuccesBlock:^(NSUInteger start, NSUInteger end) {
-        NSLog(@"block call: ", start, end);
-        NSDictionary *timeDict = @[@"startTime": start, @"endTime": end];
+    [vc setSuccessBlock:^(NSUInteger start, NSUInteger end) {
+        NSLog(@"block call: %lu %lu", start, end);
+        NSString *startStr = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)start];
+        NSString *endStr = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)end];
+
+        NSDictionary *timeDict = @{@"startTime": startStr, @"endTime": endStr};
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:timeDict];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
         }];
