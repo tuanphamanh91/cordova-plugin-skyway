@@ -30,14 +30,24 @@
 
 - (void)createPeer:(CDVInvokedUrlCommand*)command 
 {
-    NSLog(@"createPeer");
     NSLog(@"startTrip");
-    NSString* driverID = [command.arguments objectAtIndex:0];
+    self.callbackId = command.callbackId;
+
+    NSString *myId = [command.arguments objectAtIndex:0];
+    NSString  *partnerId = [command.arguments objectAtIndex:1];
+    
     ViewController *vc = [[ViewController alloc] initWithNibName:@"ViewController" bundle:nil];
+    vc.myId = myId;
+    vc.partnerId = partnerId;
+    [vc setSuccesBlock:^(NSUInteger start, NSUInteger end) {
+        NSLog(@"block call: ", start, end);
+        NSDictionary *timeDict = @[@"startTime": start, @"endTime": end];
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:timeDict];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }];
+
     [ROOTVIEW presentViewController:vc animated:YES completion:^{}];
 
-    CDVPluginResult* pluginResult = nil;
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 @end

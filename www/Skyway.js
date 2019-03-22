@@ -1,5 +1,5 @@
 var exec = require('cordova/exec');
 
-exports.createPeer = function (arg0, success, error) {
-    exec(success, error, 'Skyway', 'createPeer', [arg0]);
+exports.createPeer = function (myId, partnerId, successCallback, errorCallback) {
+    exec(success, error, 'Skyway', 'createPeer', [myId, partnerId]);
 };

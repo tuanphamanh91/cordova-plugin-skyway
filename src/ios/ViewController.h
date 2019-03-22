@@ -12,6 +12,7 @@
 
 @property(nonatomic, strong) NSString *partnerId;
 @property(nonatomic, strong) NSString *myId;
+@property (nonatomic, copy) void (^successBlock)(NSUInteger start, NSUInteger end);
 
 @end
 

@@ -16,6 +16,8 @@ static NSString *const kDomain = @"money-reco.com";
     SKWMediaStream *_remoteStream;
     SKWMediaConnection *_mediaConnection;
     BOOL _bConnected;
+    NSUInteger startCallTime;
+    NSUInteger endCallTime;
 
     __weak IBOutlet UIButton *switchCameraButton;
     __weak IBOutlet UIView *containButtonView;
@@ -107,6 +109,7 @@ static NSString *const kDomain = @"money-reco.com";
         if ([obj isKindOfClass:[SKWMediaStream class]]) {
             if (!self->_bConnected) {
                 self->_bConnected = YES;
+                startCallTime = [[NSDate date] timeIntervalSince1970];
                 self->_remoteStream = (SKWMediaStream *)obj;
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self->_remoteStream addVideoRenderer:self->partnerView track:0];
@@ -182,6 +185,15 @@ static NSString *const kDomain = @"money-reco.com";
 - (IBAction)hangoutButtonPressed:(id)sender {
     [self closeRemoteStream];
     [_mediaConnection close];
+    endCallTime = [[NSDate date] timeIntervalSince1970];
+    NSLog(startCallTime);
+    NSLog(endCallTime);
+    if (self.succesBlock) {
+        self.succesBlock(10, 20);
+    }
+    self.succesBlock = nil;
+    [self dismissViewControllerAnimated:NO completion:nil];
+
 }
 
 - (void)dealloc {
