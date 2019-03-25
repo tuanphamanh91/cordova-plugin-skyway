@@ -38,8 +38,20 @@
             <param name="android-package" value="cordova.plugin.skyway.Skyway" />
          </feature>
       </config-file>
+      <config-file target="AndroidManifest.xml" parent="/manifest/application">
+         <activity android:name="cordova.plugin.skyway.PeerActivity" android:theme="@style/NoActionBar" />
+      </config-file>
       <config-file parent="/*" target="AndroidManifest.xml" />
       <source-file src="src/android/Skyway.java" target-dir="src/cordova/plugin/skyway" />
+      <source-file src="src/android/PeerActivity.java" target-dir="src/cordova/plugin/skyway" />
+      <resource-file src="res/android/drawable/icon_hang_up.png" target="res/drawable/icon_hang_up.png" />
+      <resource-file src="res/android/drawable/icon_video_off.png" target="res/drawable/icon_video_off.png" />
+      <resource-file src="res/android/drawable/icon_video_on.png" target="res/drawable/icon_video_on.png" />
+      <resource-file src="res/android/drawable/icon_voice_off.png" target="res/drawable/icon_voice_off.png" />
+      <resource-file src="res/android/drawable/icon_voice_on.png" target="res/drawable/icon_voice_on.png" />
+      <resource-file src="res/android/drawable/video_call_button_control_background.xml" target="res/drawable/video_call_button_control_background.xml" />
+      <resource-file src="res/android/values/styles.xml" target="res/values/styles.xml" />
+      <source-file src="res/android/layout/activity_skyway_calling.xml" target-dir="res/layout"/>
+      <lib-file src="libs/android/skyway.aar" />
    </platform>
-
 </plugin>
