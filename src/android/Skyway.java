@@ -25,6 +25,8 @@ public class Skyway extends CordovaPlugin {
     public static final String ACTION_CHANGE_VIDEO = "action_skyway_change_video";
     public static final String EXTRA_DATA_START_TIME_CALL = "extra_data_skyway_start_time_call";
     public static final String EXTRA_DATA_END_TIME_CALL = "extra_data_skyway_en_time_call";
+    public static final String EXTRA_DATA_IS_HANGUP = "extra_data_skyway_is_hangup";
+
     /**
      * Common tag used for logging statements.
      */
@@ -52,7 +54,7 @@ public class Skyway extends CordovaPlugin {
     private String domain = null;
     private String peerId = null;
     private String targetPeerId = null;
-    private boolean isDebugMode = true;
+    private boolean isDebugMode = false;
 
     @Override
     public boolean execute(String action, JSONArray inputs, CallbackContext callbackContext) throws JSONException {
@@ -80,6 +82,7 @@ public class Skyway extends CordovaPlugin {
         Intent intent = new Intent(cordova.getContext(), PeerActivity.class);
         intent.putExtra(PeerActivity.EXTRA_API_KEY, this.apiKey);
         intent.putExtra(PeerActivity.EXTRA_DOMAIN, this.domain);
+        intent.putExtra(PeerActivity.EXTRA_DEBUG_MODE, this.isDebugMode);
         if (!TextUtils.isEmpty(this.peerId)) {
             intent.putExtra(PeerActivity.EXTRA_PEER_ID, this.peerId);
         }
@@ -92,25 +95,13 @@ public class Skyway extends CordovaPlugin {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         Log.d(LOGTAG, "onActivityResult... ");
-        final StringBuilder sb = new StringBuilder();
-        if (intent != null) {
-            final Bundle extras = intent.getExtras();
-            final Set<String> keySet = extras.keySet();
-            for (final String key: keySet) {
-                sb.append('\"');
-                sb.append(key);
-                sb.append("\"=\"");
-                sb.append(extras.get(key));
-                sb.append("\", ");
-            }
-        }
-        Log.d(LOGTAG, "onActivityResult..." + sb);
         if (requestCode == RC_START_VIDEO_CALL && resultCode == Activity.RESULT_OK) {
             if (intent != null && intent.hasExtra(ACTION_HANGUP)) {
                 //seconds
                 long startTime = intent.getLongExtra(EXTRA_DATA_START_TIME_CALL, 0);
                 long endTime = intent.getLongExtra(EXTRA_DATA_END_TIME_CALL, 0);
-                String jsonStr = String.format("{ 'start_time': %d, 'end_time': %d }", startTime, endTime);
+                boolean isHangup = intent.getBooleanExtra(EXTRA_DATA_IS_HANGUP, true);
+                String jsonStr = String.format("{ 'start_time': %d, 'end_time': %d, 'is_hangup': %b }", startTime, endTime, isHangup);
                 fireEvent(EVENT_HANGUP, jsonStr);
             } else if (intent != null && intent.hasExtra(ACTION_CHANGE_MUTE)) {
                 boolean mute = intent.getBooleanExtra(ACTION_CHANGE_MUTE, false);
