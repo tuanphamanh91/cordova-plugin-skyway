@@ -44,13 +44,26 @@
         NSString *endStr = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)end];
 
         NSDictionary *timeDict = @{@"startTime": startStr, @"endTime": endStr};
-        
-        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:timeDict];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-        }];
+        [self fireEvent:@"" event:@"skyway_hangup" withData:timeDict];
+
+        // CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:timeDict];
+        // [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        // }];
 
     [ROOTVIEW presentViewController:vc animated:YES completion:^{}];
-
 }
+
+- (void) fireEvent:(NSString *)obj event:(NSString *)eventName withData:(NSString *)jsonStr {
+    NSString* js;
+    if(obj && [obj isEqualToString:@"window"]) {
+        js = [NSString stringWithFormat:@"var evt=document.createEvent(\"UIEvents\");evt.initUIEvent(\"%@\",true,false,window,0);window.dispatchEvent(evt);", eventName];
+    } else if(jsonStr && [jsonStr length]>0) {
+        js = [NSString stringWithFormat:@"javascript:cordova.fireDocumentEvent('%@',%@);", eventName, jsonStr];
+    } else {
+        js = [NSString stringWithFormat:@"javascript:cordova.fireDocumentEvent('%@');", eventName];
+    }
+    [self.commandDelegate evalJs:js];
+}
+
 
 @end
