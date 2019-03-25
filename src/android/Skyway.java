@@ -32,6 +32,8 @@ public class Skyway extends CordovaPlugin {
      */
     private static final String LOGTAG = "Skyway";
 
+    private static final int DEFAULT_TIME_INTERVAL_RECONNECT = 10000;
+
     private static final int RC_START_VIDEO_CALL = 89;
     /**
      * Cordova Actions.
@@ -43,6 +45,7 @@ public class Skyway extends CordovaPlugin {
     private static final String OPT_DOMAIN = "domain";
     private static final String OPT_PEER_ID = "peerId";
     private static final String OPT_TARGET_PEER_ID = "targetPeerId";
+    private static final String OPT_TIME_INTERVAL_RECONNECT = "intervalReconnect";
     private static final String OPT_DEBUG_MODE = "debugMode";
 
     /* event */
@@ -54,7 +57,8 @@ public class Skyway extends CordovaPlugin {
     private String domain = null;
     private String peerId = null;
     private String targetPeerId = null;
-    private boolean isDebugMode = false;
+    private boolean isDebugMode = true;
+    private int intervalReconnect = DEFAULT_TIME_INTERVAL_RECONNECT;
 
     @Override
     public boolean execute(String action, JSONArray inputs, CallbackContext callbackContext) throws JSONException {
@@ -83,6 +87,7 @@ public class Skyway extends CordovaPlugin {
         intent.putExtra(PeerActivity.EXTRA_API_KEY, this.apiKey);
         intent.putExtra(PeerActivity.EXTRA_DOMAIN, this.domain);
         intent.putExtra(PeerActivity.EXTRA_DEBUG_MODE, this.isDebugMode);
+        intent.putExtra(PeerActivity.EXTRA_TIME_INTERVAL_RECONNECT, this.intervalReconnect);
         if (!TextUtils.isEmpty(this.peerId)) {
             intent.putExtra(PeerActivity.EXTRA_PEER_ID, this.peerId);
         }
@@ -125,6 +130,8 @@ public class Skyway extends CordovaPlugin {
             if (options.has(OPT_PEER_ID)) this.peerId = options.getString(OPT_PEER_ID);
             if (options.has(OPT_TARGET_PEER_ID)) this.targetPeerId = options.getString(OPT_TARGET_PEER_ID);
             if (options.has(OPT_DEBUG_MODE)) this.isDebugMode = options.optBoolean(OPT_DEBUG_MODE);
+            if (options.has(OPT_TIME_INTERVAL_RECONNECT)) this.intervalReconnect = options.getInt(OPT_TIME_INTERVAL_RECONNECT);
+
         } catch(JSONException e) {
             e.printStackTrace();
         }

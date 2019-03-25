@@ -49,6 +49,7 @@ public class PeerActivity extends AppCompatActivity {
     public static final String EXTRA_PEER_ID = "skyway_extra_peer_id";
     public static final String EXTRA_TARGET_PEER_ID = "skyway_extra_target_peer_id";
     public static final String EXTRA_DEBUG_MODE = "skyway_extra_debug_mode";
+    public static final String EXTRA_TIME_INTERVAL_RECONNECT = "skyway_extra_interval_reconnect";
 
     private Peer _peer;
     private MediaStream _localStream;
@@ -74,6 +75,7 @@ public class PeerActivity extends AppCompatActivity {
     private String peerId;
     private String targetPeerId;
     private boolean isDebugMode = true;
+    private int intervalReconnect;
     private long startCall = 0;
     private long endCall = 0;
 
@@ -94,6 +96,7 @@ public class PeerActivity extends AppCompatActivity {
         this.peerId = getIntent().getExtras().getString(EXTRA_PEER_ID);
         this.targetPeerId = getIntent().getExtras().getString(EXTRA_TARGET_PEER_ID);
         this.isDebugMode = getIntent().getExtras().getBoolean(EXTRA_DEBUG_MODE, false);
+        this.intervalReconnect = getIntent().getExtras().getInt(EXTRA_TIME_INTERVAL_RECONNECT, 0);
         //
         // Initialize Peer
         //
@@ -541,7 +544,7 @@ public class PeerActivity extends AppCompatActivity {
                             onPeerSelected(targetPeerId);
                         }
                     }
-                    sendEmptyMessageDelayed(START, 1000);
+                    sendEmptyMessageDelayed(START, intervalReconnect);
                     break;
                 default:
                     removeMessages(START);
