@@ -44,6 +44,7 @@
         NSString *endStr = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)end];
 
         NSDictionary *timeDict = @{@"startTime": startStr, @"endTime": endStr};
+        
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:timeDict];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
         }];

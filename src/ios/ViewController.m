@@ -193,13 +193,16 @@ static NSString *const kDomain = @"money-reco.com";
     }
     self.successBlock = nil;
     [self dismissViewControllerAnimated:NO completion:nil];
-
+    [_timer invalidate];
+    _timer = nil;
 }
 
 - (void)dealloc {
     _localStream = nil;
     _mediaConnection = nil;
     _peer = nil;
+    [_timer invalidate];
+    _timer = nil;
 }
 
 @end
