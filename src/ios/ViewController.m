@@ -7,14 +7,13 @@
 //
 
 #import "ViewController.h"
-static NSString *const kAPIkey = @"e1c8e6ac-435c-4a5c-aad6-1a192b07d8b4";
-static NSString *const kDomain = @"money-reco.com";
 
 @interface ViewController () {
     SKWPeer *_peer;
     SKWMediaStream *_localStream;
     SKWMediaStream *_remoteStream;
     SKWMediaConnection *_mediaConnection;
+    SKWDataConnection *_signalingChannel;
     BOOL _bConnected;
     NSUInteger startCallTime;
     NSUInteger endCallTime;
@@ -37,14 +36,9 @@ static NSString *const kDomain = @"money-reco.com";
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
-    // hash code
-    if (!_partnerId) {
-        _partnerId = @"12345";
-        _myId = @"4444";
-    }
     SKWPeerOption *option = [[SKWPeerOption alloc] init];
-    option.key = kAPIkey;
-    option.domain = kDomain;
+    option.key = _apiKey;
+    option.domain = _domain;
     _peer = [[SKWPeer alloc] initWithId:_myId options:option];
     
     [_peer on:SKW_PEER_EVENT_OPEN callback:^(NSObject * _Nullable arg) {
@@ -68,13 +62,21 @@ static NSString *const kDomain = @"money-reco.com";
         }
     }];
 
+    // CONNECT (Custom Signaling Channel for a call)
+    [_peer on:SKW_PEER_EVENT_CONNECTION callback:^(NSObject* obj) {
+        if (YES == [obj isKindOfClass:[SKWDataConnection class]]) {
+            _signalingChannel = (SKWDataConnection *)obj;
+            [self setSignalingCallbacks];
+        }
+    }];
+    
     [_peer on:SKW_PEER_EVENT_CLOSE callback:^(NSObject* obj) {}];
     [_peer on:SKW_PEER_EVENT_DISCONNECTED callback:^(NSObject* obj) {}];
     [_peer on:SKW_PEER_EVENT_ERROR callback:^(NSObject* obj) {}];
     
     [self performSelector:@selector(makeVideoCall) withObject:nil afterDelay:3.0];
     
-    _timer = [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(makeVideoCall) userInfo:NULL repeats:YES];
+    _timer = [NSTimer scheduledTimerWithTimeInterval:_intervalReconnect target:self selector:@selector(makeVideoCall) userInfo:NULL repeats:YES];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -83,6 +85,7 @@ static NSString *const kDomain = @"money-reco.com";
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
+    [self closeAllConnection];
     [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     [super viewDidDisappear:animated];
 }
@@ -93,12 +96,38 @@ static NSString *const kDomain = @"money-reco.com";
         NSLog(@"calling...");
         _mediaConnection = [_peer callWithId:_partnerId stream:_localStream];
         [self setMediaCallbacks];
+        // custom P2P signaling channel to reject call attempt
+        _signalingChannel = [_peer connectWithId:_partnerId];
+        [self setSignalingCallbacks];
     } else if (_timer) {
         NSLog(@"end timer...");
         [_timer invalidate];
         _timer = nil;
     }
     
+}
+
+//
+// Set callbacks for SKW_DATACONNECTION_EVENTs
+//
+- (void)setSignalingCallbacks {
+    if (nil == _signalingChannel) {
+        return;
+    }
+    
+    [_signalingChannel on:SKW_DATACONNECTION_EVENT_OPEN callback:^(NSObject* obj) { }];
+    [_signalingChannel on:SKW_DATACONNECTION_EVENT_CLOSE callback:^(NSObject* obj) { }];
+    [_signalingChannel on:SKW_DATACONNECTION_EVENT_ERROR callback:^(NSObject* obj) {
+        SKWPeerError* err = (SKWPeerError *)obj;
+        NSLog(@"%@", err);
+    }];
+    [_signalingChannel on:SKW_DATACONNECTION_EVENT_DATA callback:^(NSObject* obj) {
+        NSString *message = (NSString *)obj;
+        NSLog(@"[On/Data] %@", message);
+        if ([message isEqualToString:@"disconnected"]) {
+            [self doHangup:NO];
+        }
+    }];
 }
 
 - (void)setMediaCallbacks {
@@ -121,15 +150,23 @@ static NSString *const kDomain = @"money-reco.com";
         if (!self->_bConnected) {
             return;
         }
-        
         [self closeRemoteStream];
         [self unsetMediaCallbacks];
         self->_mediaConnection = nil;
-        
+        [self->_signalingChannel close];
         self->_bConnected = NO;
-        
+        [self doHangup:NO];
     }];
     
+}
+
+- (void)closeAllConnection {
+    [self closeRemoteStream];
+    [_mediaConnection close];
+    [self unsetMediaCallbacks];
+    [_signalingChannel close];
+    [self unsetDataConnectionCallbacks];
+    [self unsetPeerCallbacks];
 }
 
 - (void)closeRemoteStream {
@@ -142,6 +179,22 @@ static NSString *const kDomain = @"money-reco.com";
     }
 }
 
+//
+// Unset callbacks for PEER_EVENTs
+//
+- (void)unsetPeerCallbacks {
+    if (nil == _peer) {
+        return;
+    }
+    
+    [_peer on:SKW_PEER_EVENT_OPEN callback:nil];
+    [_peer on:SKW_PEER_EVENT_CONNECTION callback:nil];
+    [_peer on:SKW_PEER_EVENT_CALL callback:nil];
+    [_peer on:SKW_PEER_EVENT_CLOSE callback:nil];
+    [_peer on:SKW_PEER_EVENT_DISCONNECTED callback:nil];
+    [_peer on:SKW_PEER_EVENT_ERROR callback:nil];
+}
+
 - (void)unsetMediaCallbacks {
     if(_mediaConnection) {
         [_mediaConnection on:SKW_MEDIACONNECTION_EVENT_STREAM callback:nil];
@@ -150,6 +203,14 @@ static NSString *const kDomain = @"money-reco.com";
     }
 }
 
+- (void)unsetDataConnectionCallbacks {
+    if (_signalingChannel) {
+        [_signalingChannel on:SKW_DATACONNECTION_EVENT_OPEN callback:nil];
+        [_signalingChannel on:SKW_DATACONNECTION_EVENT_CLOSE callback:nil];
+        [_signalingChannel on:SKW_DATACONNECTION_EVENT_ERROR callback:nil];
+        [_signalingChannel on:SKW_DATACONNECTION_EVENT_DATA callback:nil];
+    }
+}
 #pragma mark - Action
 - (IBAction)switchCameraButtonPressed:(id)sender {
     if (_localStream) {
@@ -183,13 +244,24 @@ static NSString *const kDomain = @"money-reco.com";
 
 }
 - (IBAction)hangoutButtonPressed:(id)sender {
+    if (_signalingChannel && _signalingChannel.isOpen) {
+        [_signalingChannel send:@"disconnected"];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            [self doHangup:YES];
+        });
+    } else {
+        [self doHangup:YES];
+    }
+}
+
+- (void)doHangup:(BOOL)isSelfHangup {
+    NSLog(@"doHangup....%s", isSelfHangup ? "true" : "false");
     [self closeRemoteStream];
     [_mediaConnection close];
+    [self->_signalingChannel close];
     endCallTime = [[NSDate date] timeIntervalSince1970];
-    NSLog(@"%lu", (unsigned long)startCallTime);
-    NSLog(@"%lu", endCallTime);
     if (self.successBlock) {
-        self.successBlock([_myId integerValue], [_partnerId integerValue]);
+        self.successBlock(startCallTime, endCallTime, isSelfHangup);
     }
     self.successBlock = nil;
     [self dismissViewControllerAnimated:NO completion:nil];

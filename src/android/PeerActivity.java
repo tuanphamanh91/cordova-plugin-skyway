@@ -50,6 +50,9 @@ public class PeerActivity extends AppCompatActivity {
     public static final String EXTRA_TARGET_PEER_ID = "skyway_extra_target_peer_id";
     public static final String EXTRA_DEBUG_MODE = "skyway_extra_debug_mode";
     public static final String EXTRA_TIME_INTERVAL_RECONNECT = "skyway_extra_interval_reconnect";
+    public static final String EXTRA_SHOW_LOCAL_VIDEO = "skyway_extra_show_local_video";
+
+    private final String DISCONNECTED_EVENT = "disconnected";
 
     private Peer _peer;
     private MediaStream _localStream;
@@ -75,9 +78,12 @@ public class PeerActivity extends AppCompatActivity {
     private String peerId;
     private String targetPeerId;
     private boolean isDebugMode = true;
+    private boolean isShowLocalVideo = false;
     private int intervalReconnect;
     private long startCall = 0;
     private long endCall = 0;
+    private boolean passiveCallHangup = false;
+    private boolean didHangup = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +103,7 @@ public class PeerActivity extends AppCompatActivity {
         this.targetPeerId = getIntent().getExtras().getString(EXTRA_TARGET_PEER_ID);
         this.isDebugMode = getIntent().getExtras().getBoolean(EXTRA_DEBUG_MODE, false);
         this.intervalReconnect = getIntent().getExtras().getInt(EXTRA_TIME_INTERVAL_RECONNECT, 0);
+        this.isShowLocalVideo = getIntent().getExtras().getBoolean(EXTRA_SHOW_LOCAL_VIDEO, false);
         //
         // Initialize Peer
         //
@@ -217,10 +224,25 @@ public class PeerActivity extends AppCompatActivity {
         });
     }
 
-    private void hangup(boolean isHangup) {
+    private void hangup(boolean isSelfHangup) {
+        if (didHangup) return;
+        if (isDebugMode) Log.d(TAG, "PeerActivity... hangup");
+        this.didHangup = true;
         endCall = System.currentTimeMillis() / 1000;
-        setResult(RESULT_OK, createResultHangup(isHangup));
-        finish();
+        if (isSelfHangup && _signalingChannel != null) {
+            if (isDebugMode) Log.d(TAG, "PeerActivity... hangup 1");
+            //send event disconnected
+            _signalingChannel.send(DISCONNECTED_EVENT);
+            _handler.postDelayed(() -> {
+                if (isDebugMode) Log.d(TAG, "PeerActivity... hangup 2");
+                setResult(RESULT_OK, createResultHangup(isSelfHangup));
+                finish();
+            }, 200);
+        } else {
+            if (isDebugMode) Log.d(TAG, "PeerActivity... hangup 3");
+            setResult(RESULT_OK, createResultHangup(isSelfHangup));
+            finish();
+        }
     }
 
     private void intervalTimmerCall() {
@@ -239,12 +261,13 @@ public class PeerActivity extends AppCompatActivity {
         }
     }
 
-    private Intent createResultHangup(boolean isHangup) {
+    private Intent createResultHangup(boolean isSelfHangup) {
         //calculate total time called
         Intent result = new Intent();
         result.putExtra(Skyway.ACTION_HANGUP, true);
         result.putExtra(Skyway.EXTRA_DATA_START_TIME_CALL, startCall);
-        result.putExtra(Skyway.EXTRA_DATA_IS_HANGUP, isHangup);
+        result.putExtra(Skyway.EXTRA_DATA_END_TIME_CALL, endCall);
+        result.putExtra(Skyway.EXTRA_DATA_IS_SELF_HANGUP, isSelfHangup);
         return result;
     }
 
@@ -324,8 +347,10 @@ public class PeerActivity extends AppCompatActivity {
         MediaConstraints constraints = new MediaConstraints();
         _localStream = Navigator.getUserMedia(constraints);
 
-        Canvas canvas = (Canvas) findViewById(R.id.svLocalView);
-        _localStream.addVideoRenderer(canvas, 0);
+        Canvas canvas = findViewById(R.id.svLocalView);
+        if (this.isShowLocalVideo) {
+            _localStream.addVideoRenderer(canvas, 0);
+        }
     }
 
     //
@@ -342,6 +367,8 @@ public class PeerActivity extends AppCompatActivity {
                 _remoteStream.addVideoRenderer(canvas, 0);
                 _callState = CallState.ESTABLISHED;
                 startCall = System.currentTimeMillis() / 1000;
+                passiveCallHangup = false;
+                didHangup = false;
                 destroyTimer();
             }
         });
@@ -353,8 +380,10 @@ public class PeerActivity extends AppCompatActivity {
                 closeRemoteStream();
                 _signalingChannel.close();
                 _callState = CallState.TERMINATED;
-                endCall = System.currentTimeMillis() / 1000;
-                hangup(false);
+                if (!passiveCallHangup) {
+                    passiveCallHangup = true;
+                    hangup(false);
+                }
             }
         });
 
@@ -375,14 +404,14 @@ public class PeerActivity extends AppCompatActivity {
         _signalingChannel.on(DataConnection.DataEventEnum.OPEN, new OnCallback() {
             @Override
             public void onCallback(Object object) {
-
+                if (isDebugMode) Log.d(TAG, "_signalingChannel on DataConnection.DataEventEnum.OPEN");
             }
         });
 
         _signalingChannel.on(DataConnection.DataEventEnum.CLOSE, new OnCallback() {
             @Override
             public void onCallback(Object object) {
-
+                if (isDebugMode) Log.d(TAG, "_signalingChannel on DataConnection.DataEventEnum.CLOSE");
             }
         });
 
@@ -390,7 +419,7 @@ public class PeerActivity extends AppCompatActivity {
             @Override
             public void onCallback(Object object) {
                 PeerError error = (PeerError) object;
-                if (isDebugMode) Log.d(TAG, "[On/DataError]" + error);
+                if (isDebugMode) Log.d(TAG, "[_signalingChannel On/DataError]" + error);
             }
         });
 
@@ -398,7 +427,7 @@ public class PeerActivity extends AppCompatActivity {
             @Override
             public void onCallback(Object object) {
                 String message = (String) object;
-                if (isDebugMode) Log.d(TAG, "[On/Data]" + message);
+                if (isDebugMode) Log.d(TAG, "[_signalingChannel On/Data]" + message);
 
                 switch (message) {
                     case "reject":
@@ -411,6 +440,14 @@ public class PeerActivity extends AppCompatActivity {
                         _signalingChannel.close();
                         _callState = CallState.TERMINATED;
                         break;
+                    case DISCONNECTED_EVENT:
+                        closeMediaConnection();
+                        _signalingChannel.close();
+                        _callState = CallState.TERMINATED;
+                        if (!passiveCallHangup) {
+                            passiveCallHangup = true;
+                            hangup(false);
+                        }
                 }
             }
         });

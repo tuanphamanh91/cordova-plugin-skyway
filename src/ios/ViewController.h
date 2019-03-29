@@ -12,7 +12,11 @@
 
 @property(nonatomic, strong) NSString *partnerId;
 @property(nonatomic, strong) NSString *myId;
-@property (nonatomic, copy) void (^successBlock)(NSUInteger start, NSUInteger end);
+@property(nonatomic, strong) NSString *apiKey;
+@property(nonatomic, strong) NSString *domain;
+@property(nonatomic) BOOL showLocalVideo;
+@property(nonatomic) NSInteger intervalReconnect;
+@property (nonatomic, copy) void (^successBlock)(NSUInteger start, NSUInteger end, BOOL isHangup);
 
 @end
 

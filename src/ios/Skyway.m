@@ -9,42 +9,37 @@
   // Member variables go here.
 }
 
-- (void)coolMethod:(CDVInvokedUrlCommand*)command;
 @end
 
 @implementation Skyway
-
-- (void)coolMethod:(CDVInvokedUrlCommand*)command
-{
-    CDVPluginResult* pluginResult = nil;
-    NSString* echo = [command.arguments objectAtIndex:0];
-
-    if (echo != nil && [echo length] > 0) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:echo];
-    } else {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
-    }
-
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-}
-
 - (void)createPeer:(CDVInvokedUrlCommand*)command 
 {
-    NSLog(@"startTrip");
+    NSLog(@"createPeer");
     NSDictionary *options = command.arguments[0];
-    NSString *myId = options[@"myId"] ?: nil;
-    NSString *partnerId = options[@"partnerId"] ?: nil;
+    NSString *myId = options[@"peerId"] ?: nil;
+    NSString *partnerId = options[@"targetPeerId"] ?: nil;
+    NSString *apiKey = options[@"apiKey"] ?: nil;
+    NSString *domain = options[@"domain"] ?: nil;
+    NSString *intervalReconnectS = options[@"intervalReconnect"] ?: nil;
+    NSString *showLocalVideoS = options[@"showLocalVideo"] ?: nil;
+    NSInteger intervalReconnect = intervalReconnectS ? [intervalReconnectS integerValue] : 0;
+    intervalReconnect = intervalReconnect / 1000;//it's miliseconds
+    BOOL showLocalVideo = showLocalVideoS ? [showLocalVideoS boolValue] : NO;
     
     ViewController *vc = [[ViewController alloc] initWithNibName:@"ViewController" bundle:nil];
     vc.myId = myId;
     vc.partnerId = partnerId;
+    vc.apiKey = apiKey;
+    vc.domain = domain;
+    vc.intervalReconnect = intervalReconnect;
+    vc.showLocalVideo = showLocalVideo;
 
-    [vc setSuccessBlock:^(NSUInteger start, NSUInteger end) {
+    [vc setSuccessBlock:^(NSUInteger start, NSUInteger end, BOOL isSelfHangup) {
         NSLog(@"block call: %lu %lu", start, end);
         NSString *startStr = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)start];
         NSString *endStr = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)end];
 
-        NSDictionary *timeDict = @{@"startTime": startStr, @"endTime": endStr};
+        NSDictionary *timeDict = @{@"start_time": startStr, @"end_time": endStr, @"is_hangup": [NSNumber numberWithBool:isSelfHangup]};
         
         [self fireEvent:@"" event:@"skyway_hangup" withData:[self generateJsonStringFromDictionary:timeDict]];
 

@@ -30,6 +30,12 @@
       <source-file src="src/ios/ViewController.m" />
       <source-file src="src/ios/ViewController.xib" />
       <framework src="SkyWay" type="podspec" spec="~> 1.0.6" />
+      <resource-file src="src/ios/assets/endcall.png" />
+      <resource-file src="src/ios/assets/mute.png" />
+      <resource-file src="src/ios/assets/mute_active.png" />
+      <resource-file src="src/ios/assets/offvideo_active.png" />
+      <resource-file src="src/ios/assets/switchButton.png" />
+      <resource-file src="src/ios/assets/video.png" />
    </platform>
    
    <platform name="android">

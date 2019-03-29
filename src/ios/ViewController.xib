@@ -35,7 +35,7 @@
                                 <constraint firstAttribute="width" constant="50" id="VWf-Q5-ZeB"/>
                                 <constraint firstAttribute="height" constant="50" id="umG-b5-cIF"/>
                             </constraints>
-                            <state key="normal" backgroundImage="switchButton.png"/>
+                            <state key="normal" backgroundImage="switchButton"/>
                             <connections>
                                 <action selector="switchCameraButtonPressed:" destination="-1" eventType="touchUpInside" id="QI7-6B-lw2"/>
                             </connections>
@@ -58,7 +58,7 @@
                                     <constraints>
                                         <constraint firstAttribute="width" secondItem="2VY-MG-3Zj" secondAttribute="height" id="svL-7C-yJL"/>
                                     </constraints>
-                                    <state key="normal" backgroundImage="endcall.png"/>
+                                    <state key="normal" backgroundImage="endcall"/>
                                     <connections>
                                         <action selector="hangoutButtonPressed:" destination="-1" eventType="touchUpInside" id="WA9-u0-csn"/>
                                     </connections>
@@ -68,7 +68,7 @@
                                     <constraints>
                                         <constraint firstAttribute="width" secondItem="abQ-Vt-wGr" secondAttribute="height" id="o2D-99-kCu"/>
                                     </constraints>
-                                    <state key="normal" backgroundImage="video.png"/>
+                                    <state key="normal" backgroundImage="video"/>
                                     <connections>
                                         <action selector="cameraOffButonPressed:" destination="-1" eventType="touchUpInside" id="P2L-ED-D2i"/>
                                     </connections>
@@ -78,7 +78,7 @@
                                     <constraints>
                                         <constraint firstAttribute="width" secondItem="VRU-Lj-her" secondAttribute="height" id="oAz-4q-0uo"/>
                                     </constraints>
-                                    <state key="normal" backgroundImage="mute.png"/>
+                                    <state key="normal" backgroundImage="mute"/>
                                     <connections>
                                         <action selector="muteButtonPressed:" destination="-1" eventType="touchUpInside" id="sqj-pi-FNY"/>
                                     </connections>
@@ -124,9 +124,9 @@
         </view>
     </objects>
     <resources>
-        <image name="endcall.png" width="180" height="180"/>
-        <image name="mute.png" width="180" height="180"/>
-        <image name="switchButton.png" width="192" height="192"/>
-        <image name="video.png" width="180" height="180"/>
+        <image name="endcall" width="180" height="180"/>
+        <image name="mute" width="180" height="180"/>
+        <image name="switchButton" width="192" height="192"/>
+        <image name="video" width="180" height="180"/>
     </resources>
 </document>
