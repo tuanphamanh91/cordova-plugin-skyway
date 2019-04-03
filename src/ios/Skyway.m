@@ -25,6 +25,8 @@
     NSInteger intervalReconnect = intervalReconnectS ? [intervalReconnectS integerValue] : 0;
     intervalReconnect = intervalReconnect / 1000;//it's miliseconds
     BOOL showLocalVideo = showLocalVideoS ? [showLocalVideoS boolValue] : NO;
+    NSString *enableSpeakerS = options[@"enableSpeaker"] ?: nil;
+    BOOL enableSpeaker = enableSpeakerS ? [enableSpeakerS boolValue] : NO;
     
     ViewController *vc = [[ViewController alloc] initWithNibName:@"ViewController" bundle:nil];
     vc.myId = myId;
@@ -33,7 +35,8 @@
     vc.domain = domain;
     vc.intervalReconnect = intervalReconnect;
     vc.showLocalVideo = showLocalVideo;
-
+    vc.enableSpeaker = enableSpeaker;
+    
     [vc setSuccessBlock:^(NSUInteger start, NSUInteger end, BOOL isSelfHangup) {
         NSLog(@"block call: %lu %lu", start, end);
         NSString *startStr = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)start];

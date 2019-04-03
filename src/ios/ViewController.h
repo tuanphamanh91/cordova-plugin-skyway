@@ -15,6 +15,7 @@
 @property(nonatomic, strong) NSString *apiKey;
 @property(nonatomic, strong) NSString *domain;
 @property(nonatomic) BOOL showLocalVideo;
+@property(nonatomic) BOOL enableSpeaker;
 @property(nonatomic) NSInteger intervalReconnect;
 @property (nonatomic, copy) void (^successBlock)(NSUInteger start, NSUInteger end, BOOL isHangup);
 

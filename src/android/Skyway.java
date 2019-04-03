@@ -25,14 +25,10 @@ public class Skyway extends CordovaPlugin {
     public static final String ACTION_CHANGE_VIDEO = "action_skyway_change_video";
     public static final String EXTRA_DATA_START_TIME_CALL = "extra_data_skyway_start_time_call";
     public static final String EXTRA_DATA_END_TIME_CALL = "extra_data_skyway_en_time_call";
-    public static final String EXTRA_DATA_IS_SELF_HANGUP = "extra_data_skyway_is_self_hangup";
-
     /**
      * Common tag used for logging statements.
      */
     private static final String LOGTAG = "Skyway";
-
-    private static final int DEFAULT_TIME_INTERVAL_RECONNECT = 10000;
 
     private static final int RC_START_VIDEO_CALL = 89;
     /**
@@ -45,9 +41,7 @@ public class Skyway extends CordovaPlugin {
     private static final String OPT_DOMAIN = "domain";
     private static final String OPT_PEER_ID = "peerId";
     private static final String OPT_TARGET_PEER_ID = "targetPeerId";
-    private static final String OPT_TIME_INTERVAL_RECONNECT = "intervalReconnect";
     private static final String OPT_DEBUG_MODE = "debugMode";
-    private static final String OPT_SHOW_LOCAL_VIDEO = "showLocalVideo";
 
     /* event */
     private static final String EVENT_HANGUP = "skyway_hangup";
@@ -59,8 +53,6 @@ public class Skyway extends CordovaPlugin {
     private String peerId = null;
     private String targetPeerId = null;
     private boolean isDebugMode = true;
-    private boolean isShowLocalVideo = false;
-    private int intervalReconnect = DEFAULT_TIME_INTERVAL_RECONNECT;
 
     @Override
     public boolean execute(String action, JSONArray inputs, CallbackContext callbackContext) throws JSONException {
@@ -88,9 +80,6 @@ public class Skyway extends CordovaPlugin {
         Intent intent = new Intent(cordova.getContext(), PeerActivity.class);
         intent.putExtra(PeerActivity.EXTRA_API_KEY, this.apiKey);
         intent.putExtra(PeerActivity.EXTRA_DOMAIN, this.domain);
-        intent.putExtra(PeerActivity.EXTRA_DEBUG_MODE, this.isDebugMode);
-        intent.putExtra(PeerActivity.EXTRA_TIME_INTERVAL_RECONNECT, this.intervalReconnect);
-        intent.putExtra(PeerActivity.EXTRA_SHOW_LOCAL_VIDEO, this.isShowLocalVideo);
         if (!TextUtils.isEmpty(this.peerId)) {
             intent.putExtra(PeerActivity.EXTRA_PEER_ID, this.peerId);
         }
@@ -103,13 +92,25 @@ public class Skyway extends CordovaPlugin {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         Log.d(LOGTAG, "onActivityResult... ");
+        final StringBuilder sb = new StringBuilder();
+        if (intent != null) {
+            final Bundle extras = intent.getExtras();
+            final Set<String> keySet = extras.keySet();
+            for (final String key: keySet) {
+                sb.append('\"');
+                sb.append(key);
+                sb.append("\"=\"");
+                sb.append(extras.get(key));
+                sb.append("\", ");
+            }
+        }
+        Log.d(LOGTAG, "onActivityResult..." + sb);
         if (requestCode == RC_START_VIDEO_CALL && resultCode == Activity.RESULT_OK) {
             if (intent != null && intent.hasExtra(ACTION_HANGUP)) {
                 //seconds
                 long startTime = intent.getLongExtra(EXTRA_DATA_START_TIME_CALL, 0);
                 long endTime = intent.getLongExtra(EXTRA_DATA_END_TIME_CALL, 0);
-                boolean isHangup = intent.getBooleanExtra(EXTRA_DATA_IS_SELF_HANGUP, true);
-                String jsonStr = String.format("{ 'start_time': %d, 'end_time': %d, 'is_hangup': %b }", startTime, endTime, isHangup);
+                String jsonStr = String.format("{ 'start_time': %d, 'end_time': %d }", startTime, endTime);
                 fireEvent(EVENT_HANGUP, jsonStr);
             } else if (intent != null && intent.hasExtra(ACTION_CHANGE_MUTE)) {
                 boolean mute = intent.getBooleanExtra(ACTION_CHANGE_MUTE, false);
@@ -133,8 +134,6 @@ public class Skyway extends CordovaPlugin {
             if (options.has(OPT_PEER_ID)) this.peerId = options.getString(OPT_PEER_ID);
             if (options.has(OPT_TARGET_PEER_ID)) this.targetPeerId = options.getString(OPT_TARGET_PEER_ID);
             if (options.has(OPT_DEBUG_MODE)) this.isDebugMode = options.optBoolean(OPT_DEBUG_MODE);
-            if (options.has(OPT_TIME_INTERVAL_RECONNECT)) this.intervalReconnect = options.getInt(OPT_TIME_INTERVAL_RECONNECT);
-            if (options.has(OPT_SHOW_LOCAL_VIDEO)) this.isShowLocalVideo = options.optBoolean(OPT_SHOW_LOCAL_VIDEO);
         } catch(JSONException e) {
             e.printStackTrace();
         }

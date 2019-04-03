@@ -7,6 +7,8 @@
 //
 
 #import "ViewController.h"
+#import <AudioToolbox/AudioToolbox.h>
+#import <AVFoundation/AVFoundation.h>
 
 @interface ViewController () {
     SKWPeer *_peer;
@@ -142,6 +144,9 @@
                 self->_remoteStream = (SKWMediaStream *)obj;
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self->_remoteStream addVideoRenderer:self->partnerView track:0];
+                    if (_enableSpeaker) {
+                        [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionDefaultToSpeaker error: nil];
+                    }
                 });
             }
         }
