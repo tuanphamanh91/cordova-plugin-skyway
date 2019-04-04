@@ -2,6 +2,7 @@ package cordova.plugin.skyway;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
@@ -48,14 +49,18 @@ public class PeerActivity extends AppCompatActivity {
     public static final String EXTRA_DOMAIN = "skyway_extra_domain";
     public static final String EXTRA_PEER_ID = "skyway_extra_peer_id";
     public static final String EXTRA_TARGET_PEER_ID = "skyway_extra_target_peer_id";
+    public static final String EXTRA_DEBUG_MODE = "skyway_extra_debug_mode";
+    public static final String EXTRA_TIME_INTERVAL_RECONNECT = "skyway_extra_interval_reconnect";
+    public static final String EXTRA_SHOW_LOCAL_VIDEO = "skyway_extra_show_local_video";
+    public static final String EXTRA_ENABLE_SPEAKER = "skyway_extra_enable_speaker";
+
+    private final String DISCONNECTED_EVENT = "disconnected";
 
     private Peer _peer;
     private MediaStream _localStream;
     private MediaStream _remoteStream;
     private MediaConnection _mediaConnection;
     private DataConnection _signalingChannel;
-
-    private String _strOwnId;
 
     public enum CallState {
         TERMINATED,
@@ -74,8 +79,14 @@ public class PeerActivity extends AppCompatActivity {
     private String domain;
     private String peerId;
     private String targetPeerId;
+    private boolean isDebugMode = false;
+    private boolean isShowLocalVideo = false;
+    private boolean isEnableSpeaker = false;
+    private int intervalReconnect;
     private long startCall = 0;
     private long endCall = 0;
+    private boolean passiveCallHangup = false;
+    private boolean didHangup = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +104,10 @@ public class PeerActivity extends AppCompatActivity {
         this.domain = getIntent().getExtras().getString(EXTRA_DOMAIN);
         this.peerId = getIntent().getExtras().getString(EXTRA_PEER_ID);
         this.targetPeerId = getIntent().getExtras().getString(EXTRA_TARGET_PEER_ID);
+        this.isDebugMode = getIntent().getExtras().getBoolean(EXTRA_DEBUG_MODE, false);
+        this.intervalReconnect = getIntent().getExtras().getInt(EXTRA_TIME_INTERVAL_RECONNECT, 0);
+        this.isShowLocalVideo = getIntent().getExtras().getBoolean(EXTRA_SHOW_LOCAL_VIDEO, false);
+        this.isEnableSpeaker = getIntent().getExtras().getBoolean(EXTRA_ENABLE_SPEAKER, false);
         //
         // Initialize Peer
         //
@@ -114,6 +129,7 @@ public class PeerActivity extends AppCompatActivity {
             @Override
             public void onCallback(Object object) {
                 // Request permissions
+                if (isDebugMode) Log.d(TAG, "Peer.PeerEventEnum.OPEN");
                 if (ContextCompat.checkSelfPermission(activity,
                         Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(activity,
                         Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -122,11 +138,7 @@ public class PeerActivity extends AppCompatActivity {
 
                     // Get a local MediaStream & show it
                     startLocalStream();
-                    if (!TextUtils.isEmpty(targetPeerId)) {
-                        onPeerSelected(targetPeerId);
-                    } else {
-                        intervalTimmerCall();
-                    }
+                    intervalTimmerCall();
                 }
 
             }
@@ -136,6 +148,7 @@ public class PeerActivity extends AppCompatActivity {
         _peer.on(Peer.PeerEventEnum.CALL, new OnCallback() {
             @Override
             public void onCallback(Object object) {
+                if (isDebugMode) Log.d(TAG, "Peer.PeerEventEnum.CALL");
                 if (!(object instanceof MediaConnection)) {
                     return;
                 }
@@ -146,6 +159,7 @@ public class PeerActivity extends AppCompatActivity {
                 _mediaConnection.answer(_localStream);
                 setMediaCallbacks();
                 _callState = CallState.ESTABLISHED;
+                destroyTimer();
             }
         });
 
@@ -153,6 +167,7 @@ public class PeerActivity extends AppCompatActivity {
         _peer.on(Peer.PeerEventEnum.CONNECTION, new OnCallback() {
             @Override
             public void onCallback(Object object) {
+                if (isDebugMode) Log.d(TAG, "Peer.PeerEventEnum.CONNECTION");
                 if (!(object instanceof DataConnection)) {
                     return;
                 }
@@ -166,20 +181,21 @@ public class PeerActivity extends AppCompatActivity {
         _peer.on(Peer.PeerEventEnum.CLOSE, new OnCallback() {
             @Override
             public void onCallback(Object object) {
-                Log.d(TAG, "[On/Close]");
+                if (isDebugMode) Log.d(TAG, "Peer.PeerEventEnum.CLOSE");
             }
         });
         _peer.on(Peer.PeerEventEnum.DISCONNECTED, new OnCallback() {
             @Override
             public void onCallback(Object object) {
-                Log.d(TAG, "[On/Disconnected]");
+                if (isDebugMode) Log.d(TAG, "Peer.PeerEventEnum.DISCONNECTED");
             }
         });
         _peer.on(Peer.PeerEventEnum.ERROR, new OnCallback() {
             @Override
             public void onCallback(Object object) {
                 PeerError error = (PeerError) object;
-                Log.d(TAG, "[On/Error]" + error);
+                _callState = CallState.TERMINATED;
+                if (isDebugMode) Log.d(TAG, "[Peer.PeerEventEnum.ERROR]" + error.message);
             }
         });
 
@@ -208,14 +224,33 @@ public class PeerActivity extends AppCompatActivity {
 
         View hangupAction = findViewById(R.id.btnHangup);
         hangupAction.setOnClickListener(v -> {
-            endCall = System.currentTimeMillis() / 1000;
-            setResult(RESULT_OK, createResultHangup());
-            finish();
+            hangup(true);
         });
     }
 
+    private void hangup(boolean isSelfHangup) {
+        if (didHangup) return;
+        if (isDebugMode) Log.d(TAG, "PeerActivity... hangup");
+        this.didHangup = true;
+        endCall = System.currentTimeMillis() / 1000;
+        if (isSelfHangup && _signalingChannel != null) {
+            if (isDebugMode) Log.d(TAG, "PeerActivity... hangup 1");
+            //send event disconnected
+            _signalingChannel.send(DISCONNECTED_EVENT);
+            _handler.postDelayed(() -> {
+                if (isDebugMode) Log.d(TAG, "PeerActivity... hangup 2");
+                setResult(RESULT_OK, createResultHangup(isSelfHangup));
+                finish();
+            }, 200);
+        } else {
+            if (isDebugMode) Log.d(TAG, "PeerActivity... hangup 3");
+            setResult(RESULT_OK, createResultHangup(isSelfHangup));
+            finish();
+        }
+    }
+
     private void intervalTimmerCall() {
-        Log.d(TAG, "intervalTimmerCall...");
+        if (isDebugMode) Log.d(TAG, "intervalTimmerCall...");
         if (_callState == CallState.TERMINATED) {
             _timer = new MyTimers();
             _timer.sendEmptyMessage(MyTimers.START);
@@ -223,35 +258,26 @@ public class PeerActivity extends AppCompatActivity {
     }
 
     private void destroyTimer() {
+        if (isDebugMode) Log.d(TAG, "destroyTimer");
         if (_timer != null) {
             _timer.removeMessages(MyTimers.START);
             _timer = null;
         }
     }
 
-    private Intent createResultHangup() {
+    private Intent createResultHangup(boolean isSelfHangup) {
         //calculate total time called
         Intent result = new Intent();
         result.putExtra(Skyway.ACTION_HANGUP, true);
         result.putExtra(Skyway.EXTRA_DATA_START_TIME_CALL, startCall);
         result.putExtra(Skyway.EXTRA_DATA_END_TIME_CALL, endCall);
+        result.putExtra(Skyway.EXTRA_DATA_IS_SELF_HANGUP, isSelfHangup);
         return result;
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
-        Log.d(TAG, "onNewIntent...");
-//		final Bundle extras = intent.getExtras();
-//		final StringBuilder sb = new StringBuilder();
-//		final Set<String> keySet = extras.keySet();
-//		for (final String key: keySet) {
-//			sb.append('\"');
-//			sb.append(key);
-//			sb.append("\"=\"");
-//			sb.append(extras.get(key));
-//			sb.append("\", ");
-//		}
-//		Log.d(TAG, "onNewIntent..." + sb);
+        if (isDebugMode) Log.d(TAG, "onNewIntent");
         super.onNewIntent(intent);
         if (intent != null && intent.hasExtra(EXTRA_TARGET_PEER_ID)) {
             this.targetPeerId = intent.getStringExtra(EXTRA_TARGET_PEER_ID);
@@ -320,12 +346,15 @@ public class PeerActivity extends AppCompatActivity {
     // Get a local MediaStream & show it
     //
     void startLocalStream() {
+        if (isDebugMode) Log.d(TAG, "startLocalStream");
         Navigator.initialize(_peer);
         MediaConstraints constraints = new MediaConstraints();
         _localStream = Navigator.getUserMedia(constraints);
 
-        Canvas canvas = (Canvas) findViewById(R.id.svLocalView);
-        _localStream.addVideoRenderer(canvas, 0);
+        Canvas canvas = findViewById(R.id.svLocalView);
+        if (this.isShowLocalVideo) {
+            _localStream.addVideoRenderer(canvas, 0);
+        }
     }
 
     //
@@ -336,22 +365,35 @@ public class PeerActivity extends AppCompatActivity {
         _mediaConnection.on(MediaConnection.MediaEventEnum.STREAM, new OnCallback() {
             @Override
             public void onCallback(Object object) {
+                if (isDebugMode) Log.d(TAG, "MediaConnection.MediaEventEnum.STREAM");
                 _remoteStream = (MediaStream) object;
                 Canvas canvas = (Canvas) findViewById(R.id.svRemoteView);
                 _remoteStream.addVideoRenderer(canvas, 0);
                 _callState = CallState.ESTABLISHED;
                 startCall = System.currentTimeMillis() / 1000;
+                passiveCallHangup = false;
+                didHangup = false;
                 destroyTimer();
+                //enable speaker if required
+                if (isEnableSpeaker) {
+                    AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+                    audioManager.setMode(AudioManager.STREAM_MUSIC);
+                    audioManager.setSpeakerphoneOn(true);
+                }
             }
         });
 
         _mediaConnection.on(MediaConnection.MediaEventEnum.CLOSE, new OnCallback() {
             @Override
             public void onCallback(Object object) {
+                if (isDebugMode) Log.d(TAG, "MediaConnection.MediaEventEnum.CLOSE");
                 closeRemoteStream();
                 _signalingChannel.close();
                 _callState = CallState.TERMINATED;
-                endCall = System.currentTimeMillis() / 1000;
+                if (!passiveCallHangup) {
+                    passiveCallHangup = true;
+                    hangup(false);
+                }
             }
         });
 
@@ -359,7 +401,7 @@ public class PeerActivity extends AppCompatActivity {
             @Override
             public void onCallback(Object object) {
                 PeerError error = (PeerError) object;
-                Log.d(TAG, "[On/MediaError]" + error);
+                if (isDebugMode) Log.d(TAG, "[On/MediaError]" + error);
             }
         });
 
@@ -372,14 +414,14 @@ public class PeerActivity extends AppCompatActivity {
         _signalingChannel.on(DataConnection.DataEventEnum.OPEN, new OnCallback() {
             @Override
             public void onCallback(Object object) {
-
+                if (isDebugMode) Log.d(TAG, "_signalingChannel on DataConnection.DataEventEnum.OPEN");
             }
         });
 
         _signalingChannel.on(DataConnection.DataEventEnum.CLOSE, new OnCallback() {
             @Override
             public void onCallback(Object object) {
-
+                if (isDebugMode) Log.d(TAG, "_signalingChannel on DataConnection.DataEventEnum.CLOSE");
             }
         });
 
@@ -387,7 +429,7 @@ public class PeerActivity extends AppCompatActivity {
             @Override
             public void onCallback(Object object) {
                 PeerError error = (PeerError) object;
-                Log.d(TAG, "[On/DataError]" + error);
+                if (isDebugMode) Log.d(TAG, "[_signalingChannel On/DataError]" + error);
             }
         });
 
@@ -395,7 +437,7 @@ public class PeerActivity extends AppCompatActivity {
             @Override
             public void onCallback(Object object) {
                 String message = (String) object;
-                Log.d(TAG, "[On/Data]" + message);
+                if (isDebugMode) Log.d(TAG, "[_signalingChannel On/Data]" + message);
 
                 switch (message) {
                     case "reject":
@@ -408,6 +450,14 @@ public class PeerActivity extends AppCompatActivity {
                         _signalingChannel.close();
                         _callState = CallState.TERMINATED;
                         break;
+                    case DISCONNECTED_EVENT:
+                        closeMediaConnection();
+                        _signalingChannel.close();
+                        _callState = CallState.TERMINATED;
+                        if (!passiveCallHangup) {
+                            passiveCallHangup = true;
+                            hangup(false);
+                        }
                 }
             }
         });
@@ -502,7 +552,7 @@ public class PeerActivity extends AppCompatActivity {
     // Create a MediaConnection
     //
     void onPeerSelected(String strPeerId) {
-        Log.d(TAG, "onPeerSelected..." + strPeerId);
+        if (isDebugMode) Log.d(TAG, "onPeerSelected..." + strPeerId);
         if (null == _peer) {
             return;
         }
@@ -531,17 +581,17 @@ public class PeerActivity extends AppCompatActivity {
 
         @Override
         public void handleMessage(Message msg) {
+            if (isDebugMode) Log.d(TAG, "MyTimers... handleMessage: " + msg.what);
             switch (msg.what) {
                 case START:
                     // Do something etc.
-                    Log.d("TimerExample", "START");
-                    if (_callState == CallState.TERMINATED && !TextUtils.isEmpty(targetPeerId)) {
-                        onPeerSelected(targetPeerId);
-                        removeMessages(START);
-                    } else {
-
-                        sendEmptyMessageDelayed(START, 10000);
+                    if (isDebugMode) Log.d(TAG, "MyTimers... handleMessage: START _callState = " + _callState);
+                    if (_callState == CallState.TERMINATED) {
+                        if (!TextUtils.isEmpty(targetPeerId)) {
+                            onPeerSelected(targetPeerId);
+                        }
                     }
+                    sendEmptyMessageDelayed(START, intervalReconnect);
                     break;
                 default:
                     removeMessages(START);

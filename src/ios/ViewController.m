@@ -54,6 +54,9 @@
         [SKWNavigator initialize:self->_peer];
         self->_localStream = [SKWNavigator getUserMedia:constraints];
 //        [self->_localStream addVideoRenderer:self->partnerView track:0];
+        [self performSelector:@selector(makeVideoCall) withObject:nil];
+        
+        _timer = [NSTimer scheduledTimerWithTimeInterval:_intervalReconnect target:self selector:@selector(makeVideoCall) userInfo:NULL repeats:YES];
     }];
     
     [_peer on:SKW_PEER_EVENT_CALL callback:^(NSObject * _Nullable obj) {
@@ -74,11 +77,9 @@
     
     [_peer on:SKW_PEER_EVENT_CLOSE callback:^(NSObject* obj) {}];
     [_peer on:SKW_PEER_EVENT_DISCONNECTED callback:^(NSObject* obj) {}];
-    [_peer on:SKW_PEER_EVENT_ERROR callback:^(NSObject* obj) {}];
-    
-    [self performSelector:@selector(makeVideoCall) withObject:nil afterDelay:3.0];
-    
-    _timer = [NSTimer scheduledTimerWithTimeInterval:_intervalReconnect target:self selector:@selector(makeVideoCall) userInfo:NULL repeats:YES];
+    [_peer on:SKW_PEER_EVENT_ERROR callback:^(NSObject* obj) {
+        NSLog(@"[SKW_PEER_EVENT_ERROR] -- %@", obj);
+    }];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -121,7 +122,7 @@
     [_signalingChannel on:SKW_DATACONNECTION_EVENT_CLOSE callback:^(NSObject* obj) { }];
     [_signalingChannel on:SKW_DATACONNECTION_EVENT_ERROR callback:^(NSObject* obj) {
         SKWPeerError* err = (SKWPeerError *)obj;
-        NSLog(@"%@", err);
+        NSLog(@"[SKW_DATACONNECTION_EVENT_ERROR] -- %@", err);
     }];
     [_signalingChannel on:SKW_DATACONNECTION_EVENT_DATA callback:^(NSObject* obj) {
         NSString *message = (NSString *)obj;
