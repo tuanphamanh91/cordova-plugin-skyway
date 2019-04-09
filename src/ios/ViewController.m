@@ -21,11 +21,13 @@
     NSUInteger endCallTime;
 
     __weak IBOutlet UIButton *switchCameraButton;
+    __weak IBOutlet UIButton *openBrowserButton;
     __weak IBOutlet UIView *containButtonView;
     __weak IBOutlet UIButton *muteButton;
     __weak IBOutlet UIButton *cameraOffButton;
     __weak IBOutlet UIButton *hangoutButton;
     __weak IBOutlet SKWVideo *partnerView;
+    __weak IBOutlet SKWVideo *localVideo;
     
     NSTimer *_timer;
 }
@@ -53,6 +55,7 @@
         // Get a local MediaStream & show it
         [SKWNavigator initialize:self->_peer];
         self->_localStream = [SKWNavigator getUserMedia:constraints];
+        [self->_localStream addVideoRenderer:self->localVideo track:0];
 //        [self->_localStream addVideoRenderer:self->partnerView track:0];
         [self performSelector:@selector(makeVideoCall) withObject:nil];
         
@@ -183,6 +186,13 @@
         [_remoteStream close];
         _remoteStream = nil;
     }
+    if (_localStream) {
+        if (localVideo) {
+            [_localStream removeVideoRenderer:localVideo track:0];
+        }
+        [_localStream close];
+        _localStream = nil;
+    }
 }
 
 //
@@ -228,6 +238,9 @@
         }
         [_localStream setCameraPosition:pos];
     }
+}
+- (IBAction)openBrowserButtonPressed:(id)sender {
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:_browserUrl] options:@{} completionHandler:nil];
 }
 - (IBAction)muteButtonPressed:(id)sender {
     BOOL isEnable = [_localStream getEnableAudioTrack:0];

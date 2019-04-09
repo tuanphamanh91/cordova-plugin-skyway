@@ -36,6 +36,7 @@
       <resource-file src="src/ios/assets/offvideo_active.png" />
       <resource-file src="src/ios/assets/switchButton.png" />
       <resource-file src="src/ios/assets/video.png" />
+      <resource-file src="src/ios/assets/ic_browser.png" />
    </platform>
    
    <platform name="android">
@@ -54,7 +55,8 @@
       <resource-file src="res/android/drawable/icon_video_off.png" target="res/drawable/icon_video_off.png" />
       <resource-file src="res/android/drawable/icon_video_on.png" target="res/drawable/icon_video_on.png" />
       <resource-file src="res/android/drawable/icon_voice_off.png" target="res/drawable/icon_voice_off.png" />
-      <resource-file src="res/android/drawable/icon_voice_on.png" target="res/drawable/icon_voice_on.png" />
+      <resource-file src="res/android/drawable/ic_browser.png" target="res/drawable/ic_browser.png" />
+      <resource-file src="res/android/drawable/ic_switch_camera.png" target="res/drawable/ic_switch_camera.png" />
       <resource-file src="res/android/drawable/video_call_button_control_background.xml" target="res/drawable/video_call_button_control_background.xml" />
       <resource-file src="res/android/values/styles.xml" target="res/values/styles.xml" />
       <source-file src="res/android/layout/activity_skyway_calling.xml" target-dir="res/layout"/>

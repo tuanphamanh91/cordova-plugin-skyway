@@ -20,6 +20,7 @@
     NSString *partnerId = options[@"targetPeerId"] ?: nil;
     NSString *apiKey = options[@"apiKey"] ?: nil;
     NSString *domain = options[@"domain"] ?: nil;
+    NSString *browserUrl = options[@"browserUrl"] ?: nil;
     NSString *intervalReconnectS = options[@"intervalReconnect"] ?: nil;
     NSString *showLocalVideoS = options[@"showLocalVideo"] ?: nil;
     NSInteger intervalReconnect = intervalReconnectS ? [intervalReconnectS integerValue] : 0;
@@ -36,9 +37,10 @@
     vc.intervalReconnect = intervalReconnect;
     vc.showLocalVideo = showLocalVideo;
     vc.enableSpeaker = enableSpeaker;
+    vc.browserUrl = browserUrl;
     
     [vc setSuccessBlock:^(NSUInteger start, NSUInteger end, BOOL isSelfHangup) {
-        NSLog(@"block call: %lu %lu", start, end);
+        NSLog(@"block call: %d %d", start, end);
         NSString *startStr = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)start];
         NSString *endStr = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)end];
 

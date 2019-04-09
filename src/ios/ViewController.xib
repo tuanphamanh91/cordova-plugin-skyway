@@ -15,7 +15,9 @@
                 <outlet property="cameraOffButton" destination="abQ-Vt-wGr" id="Y4q-8X-mUL"/>
                 <outlet property="containButtonView" destination="0qF-yi-F9S" id="dDj-Qn-rly"/>
                 <outlet property="hangoutButton" destination="2VY-MG-3Zj" id="Wft-1y-zsk"/>
+                <outlet property="localVideo" destination="MgW-K5-qGv" id="e5P-QQ-yS8"/>
                 <outlet property="muteButton" destination="VRU-Lj-her" id="JAT-dB-Zrt"/>
+                <outlet property="openBrowserButton" destination="NUE-DX-hNj" id="ENV-ya-NIQ"/>
                 <outlet property="partnerView" destination="VAQ-mr-Y1e" id="spb-cF-QZd"/>
                 <outlet property="switchCameraButton" destination="LFB-rH-E6x" id="pov-t1-1hQ"/>
                 <outlet property="view" destination="iN0-l3-epB" id="OpZ-JV-Be0"/>
@@ -30,10 +32,10 @@
                     <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                     <subviews>
                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LFB-rH-E6x">
-                            <rect key="frame" x="305" y="40" width="50" height="50"/>
+                            <rect key="frame" x="314" y="30" width="45" height="45"/>
                             <constraints>
-                                <constraint firstAttribute="width" constant="50" id="VWf-Q5-ZeB"/>
-                                <constraint firstAttribute="height" constant="50" id="umG-b5-cIF"/>
+                                <constraint firstAttribute="width" secondItem="LFB-rH-E6x" secondAttribute="height" multiplier="1:1" id="OMJ-5D-cH7"/>
+                                <constraint firstAttribute="height" constant="45" id="umG-b5-cIF"/>
                             </constraints>
                             <state key="normal" backgroundImage="switchButton"/>
                             <connections>
@@ -102,13 +104,36 @@
                                 <constraint firstItem="abQ-Vt-wGr" firstAttribute="top" secondItem="VRU-Lj-her" secondAttribute="top" id="tNe-ZO-Pxv"/>
                             </constraints>
                         </view>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MgW-K5-qGv" userLabel="localVideo" customClass="SKWVideo">
+                            <rect key="frame" x="16" y="30" width="105" height="139"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="105" id="8A7-gq-1H0"/>
+                                <constraint firstAttribute="width" secondItem="MgW-K5-qGv" secondAttribute="height" multiplier="105:139" id="XFS-h9-YQc"/>
+                            </constraints>
+                        </view>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="NUE-DX-hNj">
+                            <rect key="frame" x="319" y="91" width="40" height="40"/>
+                            <constraints>
+                                <constraint firstAttribute="width" secondItem="NUE-DX-hNj" secondAttribute="height" multiplier="1:1" id="H0f-1q-T07"/>
+                                <constraint firstAttribute="height" constant="40" id="rE8-d2-d5i"/>
+                            </constraints>
+                            <state key="normal" image="ic_browser"/>
+                            <connections>
+                                <action selector="openBrowserButtonPressed:" destination="-1" eventType="touchUpInside" id="a4e-lz-oi0"/>
+                            </connections>
+                        </button>
                     </subviews>
                     <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <constraints>
                         <constraint firstAttribute="bottom" secondItem="0qF-yi-F9S" secondAttribute="bottom" constant="30" id="0Ua-My-Tb1"/>
                         <constraint firstItem="0qF-yi-F9S" firstAttribute="centerX" secondItem="VAQ-mr-Y1e" secondAttribute="centerX" id="RUp-dd-w7c"/>
-                        <constraint firstItem="LFB-rH-E6x" firstAttribute="top" secondItem="VAQ-mr-Y1e" secondAttribute="top" constant="40" id="daS-Mq-Hnm"/>
-                        <constraint firstAttribute="trailing" secondItem="LFB-rH-E6x" secondAttribute="trailing" constant="20" id="osV-1H-qLQ"/>
+                        <constraint firstItem="MgW-K5-qGv" firstAttribute="leading" secondItem="VAQ-mr-Y1e" secondAttribute="leading" constant="16" id="Xqa-EQ-b1K"/>
+                        <constraint firstItem="MgW-K5-qGv" firstAttribute="top" secondItem="VAQ-mr-Y1e" secondAttribute="top" constant="30" id="Y1d-1h-JbT"/>
+                        <constraint firstItem="NUE-DX-hNj" firstAttribute="top" secondItem="LFB-rH-E6x" secondAttribute="bottom" constant="16" id="YzN-Zt-m1j"/>
+                        <constraint firstAttribute="trailing" secondItem="NUE-DX-hNj" secondAttribute="trailing" constant="16" id="cQo-pS-7gW"/>
+                        <constraint firstItem="LFB-rH-E6x" firstAttribute="top" secondItem="VAQ-mr-Y1e" secondAttribute="top" constant="30" id="daS-Mq-Hnm"/>
+                        <constraint firstAttribute="trailing" secondItem="LFB-rH-E6x" secondAttribute="trailing" constant="16" id="osV-1H-qLQ"/>
                     </constraints>
                 </view>
             </subviews>
@@ -125,8 +150,9 @@
     </objects>
     <resources>
         <image name="endcall" width="180" height="180"/>
+        <image name="ic_browser" width="120" height="120"/>
         <image name="mute" width="180" height="180"/>
-        <image name="switchButton" width="192" height="192"/>
+        <image name="switchButton" width="156" height="156"/>
         <image name="video" width="180" height="180"/>
     </resources>
 </document>

@@ -14,6 +14,7 @@
 @property(nonatomic, strong) NSString *myId;
 @property(nonatomic, strong) NSString *apiKey;
 @property(nonatomic, strong) NSString *domain;
+@property(nonatomic, strong) NSString *browserUrl;
 @property(nonatomic) BOOL showLocalVideo;
 @property(nonatomic) BOOL enableSpeaker;
 @property(nonatomic) NSInteger intervalReconnect;

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -53,6 +54,7 @@ public class PeerActivity extends AppCompatActivity {
     public static final String EXTRA_TIME_INTERVAL_RECONNECT = "skyway_extra_interval_reconnect";
     public static final String EXTRA_SHOW_LOCAL_VIDEO = "skyway_extra_show_local_video";
     public static final String EXTRA_ENABLE_SPEAKER = "skyway_extra_enable_speaker";
+    public static final String EXTRA_BROWSER_URL = "skyway_extra_browser_url";
 
     private final String DISCONNECTED_EVENT = "disconnected";
 
@@ -82,6 +84,7 @@ public class PeerActivity extends AppCompatActivity {
     private boolean isDebugMode = false;
     private boolean isShowLocalVideo = false;
     private boolean isEnableSpeaker = false;
+    private String browserUrl;
     private int intervalReconnect;
     private long startCall = 0;
     private long endCall = 0;
@@ -108,6 +111,7 @@ public class PeerActivity extends AppCompatActivity {
         this.intervalReconnect = getIntent().getExtras().getInt(EXTRA_TIME_INTERVAL_RECONNECT, 0);
         this.isShowLocalVideo = getIntent().getExtras().getBoolean(EXTRA_SHOW_LOCAL_VIDEO, false);
         this.isEnableSpeaker = getIntent().getExtras().getBoolean(EXTRA_ENABLE_SPEAKER, false);
+        this.browserUrl = getIntent().getExtras().getString(EXTRA_BROWSER_URL);
         //
         // Initialize Peer
         //
@@ -225,6 +229,19 @@ public class PeerActivity extends AppCompatActivity {
         View hangupAction = findViewById(R.id.btnHangup);
         hangupAction.setOnClickListener(v -> {
             hangup(true);
+        });
+
+        findViewById(R.id.btn_switch_camera).setOnClickListener(v -> {
+            if(null != _localStream){
+                _localStream.switchCamera();
+            }
+        });
+
+        findViewById(R.id.btn_open_browser).setOnClickListener(v -> {
+            try {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(browserUrl));
+                startActivity(browserIntent);
+            } catch (Exception e){}
         });
     }
 
@@ -367,8 +384,14 @@ public class PeerActivity extends AppCompatActivity {
             public void onCallback(Object object) {
                 if (isDebugMode) Log.d(TAG, "MediaConnection.MediaEventEnum.STREAM");
                 _remoteStream = (MediaStream) object;
-                Canvas canvas = (Canvas) findViewById(R.id.svRemoteView);
+                Canvas canvas = findViewById(R.id.svRemoteView);
                 _remoteStream.addVideoRenderer(canvas, 0);
+
+                Canvas canvasLocal = findViewById(R.id.svLocalView);
+                if (isShowLocalVideo) {
+                    _localStream.addVideoRenderer(canvasLocal, 0);
+                }
+
                 _callState = CallState.ESTABLISHED;
                 startCall = System.currentTimeMillis() / 1000;
                 passiveCallHangup = false;
@@ -543,7 +566,7 @@ public class PeerActivity extends AppCompatActivity {
             return;
         }
 
-        Canvas canvas = (Canvas) findViewById(R.id.svRemoteView);
+        Canvas canvas = findViewById(R.id.svRemoteView);
         _remoteStream.removeVideoRenderer(canvas, 0);
         _remoteStream.close();
     }

@@ -26,7 +26,6 @@ public class Skyway extends CordovaPlugin {
     public static final String EXTRA_DATA_START_TIME_CALL = "extra_data_skyway_start_time_call";
     public static final String EXTRA_DATA_END_TIME_CALL = "extra_data_skyway_en_time_call";
     public static final String EXTRA_DATA_IS_SELF_HANGUP = "extra_data_skyway_is_self_hangup";
-
     /**
      * Common tag used for logging statements.
      */
@@ -49,6 +48,7 @@ public class Skyway extends CordovaPlugin {
     private static final String OPT_DEBUG_MODE = "debugMode";
     private static final String OPT_SHOW_LOCAL_VIDEO = "showLocalVideo";
     private static final String OPT_ENABLE_SPEAKER = "enableSpeaker";
+    private static final String OPT_BROWSER_URL = "browserUrl";
 
 
     /* event */
@@ -64,6 +64,7 @@ public class Skyway extends CordovaPlugin {
     private boolean isShowLocalVideo = false;
     private boolean enableSpeaker = false;
     private int intervalReconnect = DEFAULT_TIME_INTERVAL_RECONNECT;
+    private String browserUrl = null;
 
     @Override
     public boolean execute(String action, JSONArray inputs, CallbackContext callbackContext) throws JSONException {
@@ -95,6 +96,7 @@ public class Skyway extends CordovaPlugin {
         intent.putExtra(PeerActivity.EXTRA_TIME_INTERVAL_RECONNECT, this.intervalReconnect);
         intent.putExtra(PeerActivity.EXTRA_SHOW_LOCAL_VIDEO, this.isShowLocalVideo);
         intent.putExtra(PeerActivity.EXTRA_ENABLE_SPEAKER, this.enableSpeaker);
+        intent.putExtra(PeerActivity.EXTRA_BROWSER_URL, this.browserUrl);
         if (!TextUtils.isEmpty(this.peerId)) {
             intent.putExtra(PeerActivity.EXTRA_PEER_ID, this.peerId);
         }
@@ -140,6 +142,7 @@ public class Skyway extends CordovaPlugin {
             if (options.has(OPT_TIME_INTERVAL_RECONNECT)) this.intervalReconnect = options.getInt(OPT_TIME_INTERVAL_RECONNECT);
             if (options.has(OPT_SHOW_LOCAL_VIDEO)) this.isShowLocalVideo = options.optBoolean(OPT_SHOW_LOCAL_VIDEO);
             if (options.has(OPT_SHOW_LOCAL_VIDEO)) this.enableSpeaker = options.optBoolean(OPT_ENABLE_SPEAKER);
+            if (options.has(OPT_BROWSER_URL)) this.browserUrl = options.optString(OPT_BROWSER_URL);
         } catch(JSONException e) {
             e.printStackTrace();
         }
