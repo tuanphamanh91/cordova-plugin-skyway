@@ -17,8 +17,14 @@
 @property(nonatomic, strong) NSString *browserUrl;
 @property(nonatomic) BOOL showLocalVideo;
 @property(nonatomic) BOOL enableSpeaker;
+@property(nonatomic) BOOL isSelfCalling;
+@property(nonatomic) BOOL isDebugMode;
 @property(nonatomic) NSInteger intervalReconnect;
+@property(nonatomic, strong) NSString *inCallUrl;
+@property(nonatomic, strong) NSDictionary *inCallHeader;
+@property(nonatomic, strong) NSDictionary *timeLimitConfig;
+@property(nonatomic, strong) NSString *errorMessageWhenPeerIdUnavailable;
 @property (nonatomic, copy) void (^successBlock)(NSUInteger start, NSUInteger end, BOOL isHangup);
-
+@property (nonatomic, copy) void (^resetBlock)();
 @end
 

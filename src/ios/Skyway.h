@@ -4,5 +4,4 @@
 @interface CDVClipboard : CDVPlugin {}
 
 - (void)createPeer:(CDVInvokedUrlCommand*)command;
-
 @end
